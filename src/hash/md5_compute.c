@@ -44,39 +44,51 @@ static u32 left_rotate(u32 x, u32 c)
     return (x << c) | (x >> (32 - c));
 }
 
-// md5_compute.c içine yaz
+// md5_compute.c
 char *md5_compute(const char *input)
 {
+    // 1. Get the initial length of the input string (in bytes)
     size_t initial_len = strlen(input);
+
+    // 2. Compute the bit-length (MD5 requires this to be appended at the end)
     uint64_t bit_len = (uint64_t)initial_len * 8;
 
-    // 1. yeni uzunluk: mesaj + 1 byte (0x80) + padding + 8 byte bit length
+    // 3. Compute the new length after padding:
+    //    +1 for the 0x80 byte (binary 10000000)
+    //    pad with 0x00 until the total length (mod 64) equals 56
+    //    (56 bytes = 448 bits, leaving 64 bits for the bit length)
     size_t new_len = initial_len + 1;
     while (new_len % 64 != 56)
         new_len++;
 
-    // toplam mesaj: new_len + 8 (bit length)
+    // 4. Allocate memory for the final padded message:
+    //    total size = new_len (data + padding) + 8 bytes (bit length)
     uint8_t *msg = calloc(new_len + 8, 1);
     if (!msg)
-        return NULL;
+        return NULL; // Memory allocation failed
 
-    // 2. mesaj kopyala + 0x80 ekle
+    // 5. Copy the original message into the allocated buffer
     memcpy(msg, input, initial_len);
+
+    // 6. Append the 0x80 byte to mark the start of padding (10000000 in binary)
     msg[initial_len] = 0x80;
 
-    // 3. bit length'i little-endian olarak ekle
+    // 7. Append the original message length (in bits) as a 64-bit little-endian value
     memcpy(msg + new_len, &bit_len, 8);
 
-    // 4. MD5 başlangıç değerleri (RFC 1321)
+    // 8. Initialize MD5 buffer variables (A, B, C, D) with standard constants from RFC 1321
     uint32_t a0 = 0x67452301;
     uint32_t b0 = 0xefcdab89;
     uint32_t c0 = 0x98badcfe;
     uint32_t d0 = 0x10325476;
 
-    // 5. Blok blok işlem
+    // 9. Process each 512-bit (64-byte) block of the message
     for (size_t offset = 0; offset < new_len; offset += 64)
     {
-        uint32_t *w = (uint32_t *)(msg + offset); // 16 x 32-bit word
+        // Interpret the current 64-byte block as 16 32-bit little-endian words
+        uint32_t *w = (uint32_t *)(msg + offset);
+
+        // Create working variables A, B, C, D initialized with the current hash values
         uint32_t A = a0, B = b0, C = c0, D = d0;
 
         for (uint32_t i = 0; i < 64; i++)
