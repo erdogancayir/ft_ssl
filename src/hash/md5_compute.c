@@ -47,6 +47,7 @@ static u32 left_rotate(u32 x, u32 c)
 // md5_compute.c
 char *md5_compute(const char *input)
 {
+    printf("Input: %s\n", input);
     // 1. Get the initial length of the input string (in bytes)
     size_t initial_len = strlen(input);
 
@@ -87,6 +88,33 @@ char *md5_compute(const char *input)
     {
         // Interpret the current 64-byte block as 16 32-bit little-endian words
         uint32_t *w = (uint32_t *)(msg + offset);
+
+        // Debug: print all 16 32-bit words of the current chunk
+        printf("DEBUG: Chunk at offset %zu:\n", offset);
+        for (int i = 0; i < 16; i++)
+        {
+            printf("  w[%2d] = 0x%08x\n", i, w[i]);
+        }
+
+        printf("DEBUG: Raw bytes of the current chunk:\n");
+        for (size_t i = 0; i < 64; i++)
+        {
+            uint8_t byte = *(msg + offset + i);
+            printf("0x%02x", byte);
+
+            // Yazdırılabilir bir karakter mi kontrolü (ASCII printable range)
+            if (byte >= 32 && byte <= 126)
+                printf("('%c') ", byte);
+            else
+                printf("('.') "); // Yazdırılamayan karakterler için nokta
+
+            if ((i + 1) % 4 == 0)  // her 4 byte bir ara
+                printf("  ");
+            if ((i + 1) % 16 == 0)
+                printf("\n");
+        }
+        printf("\n");
+
 
         // Create working variables A, B, C, D initialized with the current hash values
         uint32_t A = a0, B = b0, C = c0, D = d0;
