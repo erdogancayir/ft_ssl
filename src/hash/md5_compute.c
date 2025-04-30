@@ -1,4 +1,5 @@
 #include "md5_compute.h"
+#include "debug_mode.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,12 +48,14 @@ static u32 left_rotate(u32 x, u32 c)
 // md5_compute.c
 char *md5_compute(const char *input)
 {
-    printf("Input: %s\n", input);
+    DEBUG("Input: %s\n", input);
     // 1. Get the initial length of the input string (in bytes)
     size_t initial_len = strlen(input);
+    DEBUG("Initial length: %zu\n", initial_len);
 
     // 2. Compute the bit-length (MD5 requires this to be appended at the end)
     uint64_t bit_len = (uint64_t)initial_len * 8;
+    DEBUG("Bit length: %llu\n", bit_len);
 
     // 3. Compute the new length after padding:
     //    +1 for the 0x80 byte (binary 10000000)
@@ -62,6 +65,7 @@ char *md5_compute(const char *input)
     while (new_len % 64 != 56)
         new_len++;
 
+    DEBUG("New length after padding: %zu\n", new_len);
     // 4. Allocate memory for the final padded message:
     //    total size = new_len (data + padding) + 8 bytes (bit length)
     uint8_t *msg = calloc(new_len + 8, 1);
@@ -89,32 +93,7 @@ char *md5_compute(const char *input)
         // Interpret the current 64-byte block as 16 32-bit little-endian words
         uint32_t *w = (uint32_t *)(msg + offset);
 
-        // Debug: print all 16 32-bit words of the current chunk
-        printf("DEBUG: Chunk at offset %zu:\n", offset);
-        for (int i = 0; i < 16; i++)
-        {
-            printf("  w[%2d] = 0x%08x\n", i, w[i]);
-        }
-
-        printf("DEBUG: Raw bytes of the current chunk:\n");
-        for (size_t i = 0; i < 64; i++)
-        {
-            uint8_t byte = *(msg + offset + i);
-            printf("0x%02x", byte);
-
-            // Yazdırılabilir bir karakter mi kontrolü (ASCII printable range)
-            if (byte >= 32 && byte <= 126)
-                printf("('%c') ", byte);
-            else
-                printf("('.') "); // Yazdırılamayan karakterler için nokta
-
-            if ((i + 1) % 4 == 0)  // her 4 byte bir ara
-                printf("  ");
-            if ((i + 1) % 16 == 0)
-                printf("\n");
-        }
-        printf("\n");
-
+        print_debug_chunk(msg, offset);
 
         // Create working variables A, B, C, D initialized with the current hash values
         uint32_t A = a0, B = b0, C = c0, D = d0;
@@ -183,4 +162,28 @@ char *md5_compute(const char *input)
 
     free(digest);
     return hex;
+}
+
+
+static void print_debug_chunk(const uint8_t *msg, size_t offset)
+{
+    DEBUG("Chunk at offset %zu:\n", offset);
+    DEBUG("Raw bytes of the current chunk:\n");
+
+    for (size_t i = 0; i < 64; i++)
+    {
+        uint8_t byte = msg[offset + i];
+        printf("0x%02x", byte);
+
+        if (byte >= 32 && byte <= 126)
+            printf("('%c') ", byte);
+        else
+            printf("('.') ");
+
+        if ((i + 1) % 4 == 0)
+            printf("  ");
+        if ((i + 1) % 16 == 0)
+            printf("\n");
+    }
+    printf("\n");
 }

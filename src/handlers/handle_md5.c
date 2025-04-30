@@ -29,7 +29,7 @@ static void print_output(const char *input, const char *label, const char *diges
 
 int handle_md5(int argc, char **argv)
 {
-	DEBUG("Handling MD5 command");
+	DEBUG("Handling MD5 command\n");
 
 	t_flags flags;
 	if (parse_flags(argc, argv, &flags) != 0)
