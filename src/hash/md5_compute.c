@@ -56,7 +56,8 @@ char *md5_compute(const char *input)
 
     // 2. Compute the bit-length (MD5 requires this to be appended at the end)
     uint64_t bit_len = (uint64_t)initial_len * 8;
-    DEBUG("Bit length: %llu\n", bit_len);
+    DEBUG("Bit length: %lu\n", bit_len);
+
 
     // 3. Compute the new length after padding:
     //    +1 for the 0x80 byte (binary 10000000)
