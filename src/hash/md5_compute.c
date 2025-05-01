@@ -10,6 +10,8 @@
 typedef uint32_t u32;
 typedef uint8_t u8;
 
+static void print_debug_chunk(const uint8_t *msg, size_t offset);
+
 // K tablosu
 static const u32 K[64] = {
     0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
@@ -39,7 +41,6 @@ static const u32 S[64] = {
     4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
     6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21};
 
-// Sola döndürme
 static u32 left_rotate(u32 x, u32 c)
 {
     return (x << c) | (x >> (32 - c));
